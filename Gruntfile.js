@@ -14,7 +14,11 @@ module.exports = function(grunt) {
     jshint: {
       all: watched_files
     },
-
+    nodeunit: {
+        remote: {
+            src : ['test/unit-*.js']
+        }
+    },
     simplemocha: {
       options: {
           timeout: 3000,
@@ -37,13 +41,16 @@ module.exports = function(grunt) {
     }
   });
 
+    /* Load tasks */
   grunt.loadNpmTasks('grunt-db-migrate');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-simple-mocha');
+  grunt.loadNpmTasks('grunt-contrib-nodeunit');
 
   grunt.registerTask('default', ['dbsetup']);
   grunt.registerTask('dev', ['jshint', 'nodemon']);
-  grunt.registerTask('test', ['jshint', 'simplemocha:local']);
+//  grunt.registerTask('test', ['jshint', 'simplemocha:local']);
+  grunt.registerTask('test', ['jshint', 'nodeunit:remote']);
 
   grunt.registerTask('dbsetup', 'Check if the database is running / exists', function(){
 
