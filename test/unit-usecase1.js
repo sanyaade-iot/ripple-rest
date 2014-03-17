@@ -1,4 +1,22 @@
 var util = require('util');
+var Remote = require('ripple-lib').Remote;
+var remote = new Remote({
+  // see the API Reference for available options
+  trusted:        true,
+  local_signing:  true,
+  local_fee:      true,
+  fee_cushion:     1.5,
+  servers: [
+    {
+        host:    's1.ripple.com'
+      , port:    443
+      , secure:  true
+    }
+  ]
+});
+remote.connect(function() {
+    remote.request_account_info('rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W',
+});
 var log = function(obj) {
     console.log(util.inspect(obj, { showHidden: true, depth: null }));
 };
@@ -15,6 +33,7 @@ PEOPLE.rook2pawn_receiver = 'rp4GSjosE4TrPvmmfxFhu2Awf7BQn4dQoH';
 var usecase1 = function(test) {
     console.log("Use Case 1:");
     console.log("XRP to XRP");
+  
     test.expect(3);
     var generateUUID = function (){
         var d = new Date().getTime();
