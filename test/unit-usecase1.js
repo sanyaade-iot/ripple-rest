@@ -1,5 +1,22 @@
 var util = require('util');
+var http = require('http');
+var lib = require('./unit-lib');
 var Remote = require('ripple-lib').Remote;
+var async = require('async');
+var Hash = require('hashish');
+var log = function(obj) {
+    console.log(util.inspect(obj, { showHidden: true, depth: null }));
+};
+var PEOPLE = {};
+PEOPLE.rook2pawn = 'rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W';
+PEOPLE.rook2pawn_gw = 'rpzgG7yxjEP9EHf2roftLvPTvt4wfL3iYY';
+PEOPLE.rook2pawn_mm = 'rpXF7z1sypK41CFhFzNHczSE47w8rGLx7W';
+PEOPLE.rook2pawn_receiver = 'rp4GSjosE4TrPvmmfxFhu2Awf7BQn4dQoH';
+
+// shared GLOBALS between tests
+var GLOBALS = { uuid: undefined };
+
+
 var remote = new Remote({
   // see the API Reference for available options
   trusted:        true,
@@ -14,94 +31,119 @@ var remote = new Remote({
     }
   ]
 });
-remote.connect(function() {
-    remote.request_account_info('rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W',
-});
-var log = function(obj) {
-    console.log(util.inspect(obj, { showHidden: true, depth: null }));
-};
-// Test 
-var http = require('http');
-// shared GLOBALS between tests
-var GLOBALS = { uuid: undefined };
-var PEOPLE = {};
-PEOPLE.rook2pawn = 'rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W';
-PEOPLE.rook2pawn_gw = 'rpzgG7yxjEP9EHf2roftLvPTvt4wfL3iYY';
-PEOPLE.rook2pawn_mm = 'rpXF7z1sypK41CFhFzNHczSE47w8rGLx7W';
-PEOPLE.rook2pawn_receiver = 'rp4GSjosE4TrPvmmfxFhu2Awf7BQn4dQoH';
-
-var usecase1 = function(test) {
-    console.log("Use Case 1:");
-    console.log("XRP to XRP");
-  
-    test.expect(3);
-    var generateUUID = function (){
-        var d = new Date().getTime();
-        var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = (d + Math.random()*16)%16 | 0;
-            d = Math.floor(d/16);
-            return (c=='x' ? r : (r&0x7|0x8)).toString(16);
+// takes a list of ids, gives back a hash of ids : balances
+var getBalances = function(ids_list,cb) {
+    var balancehash = {};
+    var q = async.queue(function(task,callback) {
+        remote.request_account_info(task.id,function(err,obj) {
+            balancehash[task.id] = obj; 
+                
+            callback();
         });
-        return uuid;
-    };
-    var connectobj = {
-        hostname:'localhost',
-        'Content-Type' : 'application/json',
-        port: 5990,
-        path: '/v1/payments',
-        method:'POST'
-    };
-    var payment = {
-        "secret": "shDiLVUXYGFDCoMDP6HfHnER5dpmP",
-        "client_resource_id": generateUUID(),
-        "payment": {
-            "source_account": PEOPLE.rook2pawn,
-            "destination_account": PEOPLE.rook2pawn_receiver,
-            "destination_amount": {
-                "value": "1",
-                "currency": "XRP",
-                "issuer": ""
-            }
-        }
-    };
-    connectobj.headers = {
-        'Content-Type':'application/json'
-    }
-    var req = http.request(connectobj,function(res) {
-
-        // we expect to get back a HTTP 
-        // response such that content-type: application/json
-        // and a corresponding json body
-        //console.log(res.headers);
-        
-        var body = "";
-        res.setEncoding('utf8');
-        res.on('data',function(chunk) {
-            body = body.concat(chunk);
-        });
-        res.on('end',function() {
-            var obj; 
-            console.log("1. Checking the response after posting payment that it is valid json");
-            test.doesNotThrow(function() {
-                obj = JSON.parse(body)
-            });
-            if (obj !== null) {
-                console.log("2. Test that the success flag is there");
-                test.ok(obj.success, "this assertion should pass");
-                console.log("3. Test that the same UUID posted is returned");
-                console.log(obj);
-                test.ok((obj.client_resource_id === payment.client_resource_id), "this assertion should pass");
-                console.log("tttttttt");
-                GLOBALS.uuid = payment.client_resource_id;
-                GLOBALS.accountid = PEOPLE.rook2pawn;
-
-                console.log("\n\nThis is the response:");console.log(obj);
-            }
-            console.log("about to call DONE");
-            test.done();
-        });
+    },1);
+    ids_list.forEach(function(id) {
+        q.push({id:id});
     });
-    req.write(JSON.stringify(payment));
-    req.end();
+    q.drain = function() {
+        cb(balancehash);
+    }
 };
-exports.usecase1 = usecase1;
+
+var GLOBALS = {};
+GLOBALS.sender = 'rook2pawn';
+GLOBALS.destination = 'rook2pawn_receiver';
+GLOBALS.before = undefined;
+GLOBALS.after = undefined;
+GLOBALS.idlist = Hash(PEOPLE).extract([GLOBALS.sender,GLOBALS.destination]).values;
+
+async.series([
+    function(cb) {
+        remote.connect(function() {
+            cb()
+        })
+    },
+    function(cb) { 
+        console.log("aquiring balances");
+        getBalances(GLOBALS.idlist,function(balances) {
+            console.log("These are the balances!!!!\n");
+            console.log(balances);
+            GLOBALS.before = balances;
+            cb();
+        });
+    },
+    // perform XRP to XRP
+    function(cb) {
+        console.log("Use Case 1: XRP to XRP");
+        var connectobj = {
+            hostname:'localhost',
+            'Content-Type' : 'application/json',
+            port: 5990,
+            path: '/v1/payments',
+            method:'POST'
+        };
+        var payment = {
+            "secret": "shDiLVUXYGFDCoMDP6HfHnER5dpmP",
+            "client_resource_id": lib.generateUUID(),
+            "payment": {
+                "source_account": PEOPLE[GLOBALS.sender],
+                "destination_account": PEOPLE[GLOBALS.destination],
+                "destination_amount": {
+                    "value": "1",
+                    "currency": "XRP",
+                    "issuer": ""
+                }
+            }
+        };
+        connectobj.headers = {
+            'Content-Type':'application/json'
+        }
+        var req = http.request(connectobj,function(res) {
+            var body = "";
+            res.setEncoding('utf8');
+            res.on('data',function(chunk) {
+                body = body.concat(chunk);
+            });
+            res.on('end',function() {
+                var obj = JSON.parse(body);
+                cb(null,obj);
+            });
+        });
+        req.write(JSON.stringify(payment));
+        req.end();
+    },
+    function(cb) { 
+        console.log("aquiring balances");
+        getBalances(GLOBALS.idlist,function(balances) {
+            GLOBALS.after = balances;
+            cb();
+        });
+    },
+    ],
+    function(err, results) {
+        var before = {};
+        var after = {};
+        Hash(GLOBALS.before).forEach(function(val,key) {
+            before[key] = parseInt(val.account_data.Balance);
+        })
+        Hash(GLOBALS.after).forEach(function(val,key) {
+            after[key] = parseInt(val.account_data.Balance);
+        })
+        console.log("Balances before transaction");
+        log(before);
+        console.log("Balances after transaction");
+        log(after);
+        // take obj2 - obj1;
+        var diffobj = function(obj1,obj2) {
+            var result = {};
+            Hash(obj2).forEach(function(val,key) {
+                if (obj1[key] !== undefined) {
+                    var diff = val - obj1[key];
+                    result[key] = diff;
+                }
+            });
+            return result;
+        }
+        console.log("Difference between after and before");
+        console.log(diffobj(before,after));
+    }
+);
