@@ -1,5 +1,5 @@
 before_script:
-    node server.js
+    node server.js &
 language: node_js
 node_js:
     - 0.10
