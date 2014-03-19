@@ -155,9 +155,14 @@ exports.testUseCase1XRPtoXRP = function(test) {
                 return result;
             }
             console.log("Difference between after and before");
-            var diff = diffobj(before,after));
-            test.ok((-1 == Math.round(diff[GLOBALS.sender]/1e6)), 'sender is down approx 1 drop');
-            test.ok((1 == Math.round(diff[GLOBALS.destination]/1e6)), 'receiver is up approx 1 drop');
+            var diff = diffobj(before,after);
+            log(diff);
+            var s = Math.round(diff[PEOPLE[GLOBALS.sender]]/1000000);
+            var d = Math.round(diff[PEOPLE[GLOBALS.destination]]/1000000);
+            console.log(s);
+            console.log(d);
+            test.ok(-1 == s, 'sender is down approx 1 drop');
+            test.ok(1 == d, 'receiver is up approx 1 drop');
             test.done();
         }
     );
