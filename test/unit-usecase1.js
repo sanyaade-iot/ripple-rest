@@ -66,9 +66,7 @@ GLOBALS.idlist = Hash(PEOPLE).extract([GLOBALS.sender,GLOBALS.destination]).valu
 
 exports.testUseCase1XRPtoXRP = function(test) {
     console.log('testUseCase1-XRP-to-XRP');
-    test.expect(1);
-    test.ok(true,"this is true!");
-    test.done();
+    test.expect(2);
     async.series([
         function(cb) {
             remote.connect(function() {
@@ -157,7 +155,10 @@ exports.testUseCase1XRPtoXRP = function(test) {
                 return result;
             }
             console.log("Difference between after and before");
-            console.log(diffobj(before,after));
+            var diff = diffobj(before,after));
+            test.ok((-1 == Math.round(diff[GLOBALS.sender]/1e6)), 'sender is down approx 1 drop');
+            test.ok((1 == Math.round(diff[GLOBALS.destination]/1e6)), 'receiver is up approx 1 drop');
+            test.done();
         }
     );
 };
