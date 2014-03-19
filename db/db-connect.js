@@ -1,6 +1,5 @@
 var fs        = require('fs');
 var sequelize = require('sequelize');
-var pg        = require('pg').native;
 
 module.exports = function(opts) {
 
