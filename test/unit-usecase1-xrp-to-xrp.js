@@ -17,12 +17,6 @@ PEOPLE.rook2pawn_receiver = 'rp4GSjosE4TrPvmmfxFhu2Awf7BQn4dQoH';
 // shared GLOBALS between tests
 var GLOBALS = { uuid: undefined };
 
-exports.argh = function(test) {
-    test.expect(1);
-    test.ok(true,"yay");
-    test.done();
-};
-
 var remote = new Remote({
   // see the API Reference for available options
   trusted:        true,

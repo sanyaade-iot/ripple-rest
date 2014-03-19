@@ -1,5 +1,7 @@
-before_script:
-    node server.js &
+env: 
+  global: 
+    secure: fgWN1yuI++LfnHJDeWrsJgKIZb4KzAWwcnWIA7OtKUiCJsuzSsi+ORW00Ws6aUZQ1HpmBkT5LJT10LzySjNyl7V0gtn5jxJP+OSPbVS9uWOE4AdV8EweYYMXK60ZvrMBDltWWNzgESxKVa+3gLJ0koMCLh13FlXxRFPt/n5PDVs=
 language: node_js
-node_js:
-    - 0.10
+node_js: 
+- 0.10
+before_script: node server.js &

@@ -26,6 +26,10 @@ if (config.get('NODE_ENV') !== 'production') {
   app.set('json spaces', 2);
 }
 app.disable('x-powered-by');
+app.use(function(req,res,next) {
+    console.log("url is : " + req.url);
+    next();
+});
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(function(req, res, next){
