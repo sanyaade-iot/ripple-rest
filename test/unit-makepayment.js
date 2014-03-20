@@ -30,9 +30,9 @@ var payments = function(test) {
     var people = {};
     people.rook2pawn = 'rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W';
     people.rook2pawn_gw = 'rpzgG7yxjEP9EHf2roftLvPTvt4wfL3iYY';
-    console.log(process.env);
     var payment = {
-        "secret": process.env.SECRET_SENDER,
+//        "secret": process.env.SECRET_SENDER,
+        "secret": 'shDiLVUXYGFDCoMDP6HfHnER5dpmP',
         "client_resource_id": generateUUID(),
         "payment": {
             "source_account": people.rook2pawn,
