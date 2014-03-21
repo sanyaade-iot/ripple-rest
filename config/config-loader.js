@@ -35,7 +35,7 @@ nconf.defaults({
     {
       host: 's-west.ripple.com',
       port: 443,
-      secure: true
+      secure: false
     }
   ]
 });
