@@ -6,6 +6,8 @@ var log = function(obj) {
 var http = require('http');
 // shared GLOBALS between tests
 var GLOBALS = { uuid: undefined };
+var people = require('./testconfig').people;
+var secret = require('./testsecret');
 
 var payments = function(test) {
     console.log("\nPOST /v1/payments");
@@ -27,9 +29,6 @@ var payments = function(test) {
         path: '/v1/payments',
         method:'POST'
     };
-    var people = {};
-    people.rook2pawn = 'rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W';
-    people.rook2pawn_gw = 'rpzgG7yxjEP9EHf2roftLvPTvt4wfL3iYY';
     var payment = {
 //        "secret": process.env.SECRET_SENDER,
         "secret": 'shDiLVUXYGFDCoMDP6HfHnER5dpmP',

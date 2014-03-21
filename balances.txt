@@ -1,0 +1,21 @@
+
+curl http://localhost:5990/v1/accounts/r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59/balances
+curl "http://localhost:5990/v1/accounts/r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59/balances?currency=USD"
+curl "http://localhost:5990/v1/accounts/r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59/balances?currency=BTC"
+curl "http://localhost:5990/v1/accounts/r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59/balances?issuer=rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"
+curl "http://localhost:5990/v1/accounts/r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59/balances?currency=EUR&issuer=rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B"
+curl http://localhost:5990/v1/accounts/rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B/settings
+curl http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings
+curl http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W
+curl http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings
+curl -X POST -h 'Content-Type:application/json' --data='{"secret":"shDiLVUXYGFDCoMDP6HfHnER5dpmP","RequireDestTag":true}' http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings/
+curl -X POST -h 'Content-Type:application/json' http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings/ --data='{"secret":"shDiLVUXYGFDCoMDP6HfHnER5dpmP","RequireDestTag":true}'
+curl -X POST -h 'Content-Type:application/json' http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings/ --data='[}'
+curl -X POST -h 'Content-Type:application/json' http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings/ --data='[{}'
+curl -X POST -h 'Content-Type:application/json' http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings/ --data='{}'
+curl -X POST -h 'Content-Type:application/json' http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings/ --data '{}'
+curl -X POST -H 'Content-Type:application/json' http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings/ --data='{}'
+curl -X POST -H 'Content-Type:application/json' http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings/ --data '{"secret":"shDiLVUXYGFDCoMDP6HfHnER5dpmP","RequireDestTag":true}'
+curl -X POST -H 'Content-Type:application/json' http://localhost:5990/v1/accounts/rwUNHL9AdSupre4tGb7NXZpRS1ift5sR7W/settings/ --data '{"secret":"shDiLVUXYGFDCoMDP6HfHnER5dpmP","RequireDestTag":false}'
+cd ..
+vim .bash_history 

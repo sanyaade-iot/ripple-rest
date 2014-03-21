@@ -18,20 +18,24 @@ var fs                = require('fs');
 var https             = require('https');
 var ripple            = require('ripple-lib');
 var express           = require('express');
-var connect           = require('connect');
 var app               = express();
 var config            = require('./config/config-loader');
 var DatabaseInterface = require('./lib/db-interface');
+var argv = require('optimist')
+    .boolean('s')
+    .describe('s','secure')
+    .default('s',true)
+    .argv;
 
 
 /* Express Connect middleware */
 if (config.get('NODE_ENV') !== 'production') {
   app.set('json spaces', 2);
-  app.use(connect.logger(':method :url (:response-time ms)'));
+  app.use(express.logger(':method :url (:response-time ms)'));
 }
 app.disable('x-powered-by');
-app.use(connect.json());
-app.use(connect.urlencoded());
+app.use(express.json());
+app.use(express.urlencoded());
 app.use(function(req, res, next){
   var match = req.path.match(/\/api\/(.*)/);
   if (match) {
@@ -64,6 +68,10 @@ var remote_opts = {
   servers: config.get('rippled_servers'),
   storage: dbinterface
 };
+if (argv.s === false) {
+    console.log('setting servers to not use secure');
+    remote_opts.servers.secure = false
+}
 
 var remote = new ripple.Remote(remote_opts);
 

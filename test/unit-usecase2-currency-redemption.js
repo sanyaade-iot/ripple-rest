@@ -2,26 +2,13 @@ var util = require('util');
 var http = require('http');
 var lib = require('./unit-lib');
 var Remote = require('ripple-lib').Remote;
-var PEOPLE = require('./people');
+var testconfig = require('./testconfig');
 var async = require('async');
 var Hash = require('hashish');
 var log = function(obj) {
     console.log(util.inspect(obj, { showHidden: true, depth: null }));
 };
-var remote = new Remote({
-  // see the API Reference for available options
-  trusted:        true,
-  local_signing:  true,
-  local_fee:      true,
-  fee_cushion:     1.5,
-  servers: [
-    {
-        host:    's1.ripple.com'
-      , port:    443
-      , secure:  true
-    }
-  ]
-});
+var remote = new Remote(testconfig.remote)
 // takes a list of ids, gives back a hash of ids : balances
 var getBalances = function(ids_list,cb) {
     var balancehash = {};
@@ -39,12 +26,20 @@ var getBalances = function(ids_list,cb) {
         cb(balancehash);
     }
 };
+var getAccountLines = function(ids_list,cb) {
+    var lineshash = {};
+    var q = async.queue(function(task,callback) {
+        remote.request_account_lines(task.id,function(err,obj) {    
+            lineshash[task.id] = obj;
+        });
+    },1)
+};
 var GLOBALS = {};
 GLOBALS.sender = 'rook2pawn';
 GLOBALS.destination = 'rook2pawn_receiver';
 GLOBALS.before = undefined;
 GLOBALS.after = undefined;
-GLOBALS.idlist = Hash(PEOPLE).extract([GLOBALS.sender,GLOBALS.destination]).values;
+GLOBALS.idlist = Hash(testconfig.people).extract([GLOBALS.sender,GLOBALS.destination]).values;
 
 exports.testUseCase2CurrencyRedemption = function(test) {
     console.log('testUseCase2CurrencyRedemption');
@@ -78,8 +73,8 @@ exports.testUseCase2CurrencyRedemption = function(test) {
                 "secret": "shDiLVUXYGFDCoMDP6HfHnER5dpmP",
                 "client_resource_id": lib.generateUUID(),
                 "payment": {
-                    "source_account": PEOPLE[GLOBALS.sender],
-                    "destination_account": PEOPLE[GLOBALS.destination],
+                    "source_account": testconfig.people[GLOBALS.sender],
+                    "destination_account": testconfig.people[GLOBALS.destination],
                     "destination_amount": {
                         "value": "1",
                         "currency": "XRP",
@@ -139,8 +134,8 @@ exports.testUseCase2CurrencyRedemption = function(test) {
             console.log("Difference between after and before");
             var diff = diffobj(before,after);
             log(diff);
-            var s = Math.round(diff[PEOPLE[GLOBALS.sender]]/1000000);
-            var d = Math.round(diff[PEOPLE[GLOBALS.destination]]/1000000);
+            var s = Math.round(diff[testconfig.people[GLOBALS.sender]]/1000000);
+            var d = Math.round(diff[testconfig.people[GLOBALS.destination]]/1000000);
             console.log(s);
             console.log(d);
             test.ok(-1 == s, 'sender is down approx 1 drop');

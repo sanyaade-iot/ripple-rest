@@ -7,25 +7,13 @@ var Hash = require('hashish');
 var log = function(obj) {
     console.log(util.inspect(obj, { showHidden: true, depth: null }));
 };
-var PEOPLE = require('./people');
+var testconfig = require('./testconfig');
+var PEOPLE = testconfig.people;
 
 // shared GLOBALS between tests
 var GLOBALS = { uuid: undefined };
 
-var remote = new Remote({
-  // see the API Reference for available options
-  trusted:        true,
-  local_signing:  true,
-  local_fee:      true,
-  fee_cushion:     1.5,
-  servers: [
-    {
-        host:    's1.ripple.com'
-      , port:    443
-      , secure:  true
-    }
-  ]
-});
+var remote = new Remote(testconfig.remote);
 
 // takes a list of ids, gives back a hash of ids : balances
 var getBalances = function(ids_list,cb) {
