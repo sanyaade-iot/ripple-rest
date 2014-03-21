@@ -7,7 +7,6 @@ var http = require('http');
 // shared GLOBALS between tests
 var GLOBALS = { uuid: undefined };
 var people = require('./testconfig').people;
-var secret = require('./testsecret');
 
 var payments = function(test) {
     console.log("\nPOST /v1/payments");
