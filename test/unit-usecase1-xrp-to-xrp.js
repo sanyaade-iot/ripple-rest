@@ -21,7 +21,6 @@ var getBalances = function(ids_list,cb) {
     var q = async.queue(function(task,callback) {
         remote.request_account_info(task.id,function(err,obj) {
             balancehash[task.id] = obj; 
-                
             callback();
         });
     },1);
@@ -70,7 +69,7 @@ exports.testUseCase1XRPtoXRP = function(test) {
                 method:'POST'
             };
             var payment = {
-                "secret": "shDiLVUXYGFDCoMDP6HfHnER5dpmP",
+                "secret": testconfig.secrets[GLOBALS.sender],
                 "client_resource_id": lib.generateUUID(),
                 "payment": {
                     "source_account": PEOPLE[GLOBALS.sender],
