@@ -20,7 +20,6 @@ people.rook2pawn_mm = 'rpXF7z1sypK41CFhFzNHczSE47w8rGLx7W';
 people.rook2pawn_receiver = 'rp4GSjosE4TrPvmmfxFhu2Awf7BQn4dQoH';
 exports.people = people;
 
-
 var secrets = {};
 secrets.rook2pawn = process.env.SECRET_SENDER || 'shDiLVUXYGFDCoMDP6HfHnER5dpmP';
 secrets.rook2pawn_gw = process.env.SECRET_GW || 'ssR6VukdxALxWdbPrRn79qmcQ7jUp';

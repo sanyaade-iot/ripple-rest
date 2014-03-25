@@ -1,0 +1,42 @@
+Same Currency Transfer (Hot wallet)
+
+S and D both trust GW for 10 each 
+ 
+GW issues S 5 dollars GW issues D 5 Dollars
+
+S sends D $2. S now has $3
+and GW is still -$10 out of possible 20
+D now has $7.
+
+Or S trusts GW for (trust.limit). Has used up trust.balance.
+S sends D +0.1 RKP
+
+(Use RKP)
+
+========================================
+Same Currency Issuance (Bank Wallet)
+
+S is cold wallet OF the gateway!
+G - Hot wallet of a gateway
+D - customer of G
+
+So G trust S for 10 RKP
+D trusts G for 10 RKP (even though G doesnt currently have any RKP)
+
+We have S issue G $5
+and G issue D $5.
+
+
+S is rook2pawn-gw issues RKP
+S sends G 10
+G sends D 5
+Test that S sends D 2
+and becuase of this 
+
+S starts -10 and ends at -12
+G starts at +5 and ends at +5
+D starts at +5 and ends at +7
+
+========================================
+
+Same Currency Rippling
