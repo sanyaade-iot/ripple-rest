@@ -239,10 +239,10 @@ exports.testSameCurrencyTransfer = function(test) {
         log(GLOBALS);
         var x = GLOBALS.trust_b.gw_s.balance - GLOBALS.sendamount;
         var y = GLOBALS.trust_a.gw_s.balance;
-        test.ok(x === y, "gateway's trust line decreases by the amount it issues");
+        test.ok(x == y, "gateway's trust line decreases by the amount it issues");
         x = GLOBALS.trust_b.gw_d.balance - GLOBALS.sendamount;
         y = GLOBALS.trust_a.gw_d.balance;
-        test.ok(x === y, "gateway's trust line decreases by the amount it issues");
+        test.ok(x == y, "gateway's trust line decreases by the amount it issues");
         x = GLOBALS.trust_b.s.balance;
         y = GLOBALS.trust_a.s.balance;
         test.ok((x + GLOBALS.sendamount) == y, 's balance increases');
