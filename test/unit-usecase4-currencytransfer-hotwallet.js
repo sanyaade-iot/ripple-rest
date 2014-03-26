@@ -246,6 +246,7 @@ exports.testSameCurrencyTransfer = function(test) {
         x = GLOBALS.trust_b.s.balance;
         y = GLOBALS.trust_a.s.balance;
         test.ok((x + GLOBALS.sendamount) == y, 's balance increases');
+
         x = GLOBALS.trust_b.d.balance;
         y = GLOBALS.trust_a.d.balance;
         test.ok((x + GLOBALS.sendamount) == y, 'd balance increases');
