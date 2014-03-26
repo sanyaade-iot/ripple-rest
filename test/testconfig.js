@@ -21,9 +21,11 @@ people.rook2pawn_mm = 'rpXF7z1sypK41CFhFzNHczSE47w8rGLx7W';
 people.rook2pawn_receiver = 'rp4GSjosE4TrPvmmfxFhu2Awf7BQn4dQoH';
 people.rook2pawn_gw_cold = 'r97EYvF42JJdEFF3qaXPnDC2C7gP7Ar42Q';
 exports.people = people;
-
-var fsecrets = require('./secret').secrets;
-console.log(fsecrets);
+var fs = require('fs');
+var path = require('path');
+var fsecrets;
+if (fs.existsSync(path.join(__dirname,'secret.js')))
+    fsecrets = require('./secret').secrets;
 var secrets = {};
 secrets.rook2pawn = process.env.SECRET_SENDER || fsecrets.rook2pawn;
 secrets.rook2pawn_gw = process.env.SECRET_GW || fsecrets.rook2pawn_gw;
