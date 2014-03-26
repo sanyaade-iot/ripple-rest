@@ -235,11 +235,9 @@ exports.testSameCurrencyTransfer = function(test) {
     function(err,results) {
         var isApproxEquals = function(a,b) {
             var isApproxEqualsPrecision = function(a,b,p) {
-                /*
                 console.log("A:" + a + " b:" + b);
                 console.log(Number((a).toFixed(p)));
                 console.log(Number((b).toFixed(p)));
-                */
                 return (Number((a).toFixed(p)) == Number((b).toFixed(p)))
             }
             return isApproxEqualsPrecision(a,b,1)

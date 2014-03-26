@@ -16,6 +16,8 @@ S sends D +0.1 RKP
 ========================================
 Same Currency Issuance (Bank Wallet)
 
+/v1/accounts/<sourceaddress>/payments/paths/<destinationaddress>/<amount>+<currency>+<issuer>
+
 S is cold wallet OF the gateway!
 G - Hot wallet of a gateway
 D - customer of G
