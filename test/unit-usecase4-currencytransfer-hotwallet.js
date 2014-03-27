@@ -233,29 +233,20 @@ exports.testSameCurrencyTransfer = function(test) {
         }
     ],
     function(err,results) {
-        var isApproxEquals = function(a,b) {
-            var isApproxEqualsPrecision = function(a,b,p) {
-                console.log("A:" + a + " b:" + b);
-                console.log(Number((a).toFixed(p)));
-                console.log(Number((b).toFixed(p)));
-                return (Number((a).toFixed(p)) == Number((b).toFixed(p)))
-            }
-            return isApproxEqualsPrecision(a,b,1)
-        }
         log(GLOBALS);
         var x = GLOBALS.trust_b.gw_s.balance - GLOBALS.sendamount;
         var y = GLOBALS.trust_a.gw_s.balance;
-        test.ok(isApproxEquals(x,y),"gateway's trust line decreases by the amount it issues");
+        test.ok(testconfig.isApproxEquals(x,y),"gateway's trust line decreases by the amount it issues");
         x = GLOBALS.trust_b.gw_d.balance - GLOBALS.sendamount;
         y = GLOBALS.trust_a.gw_d.balance;
-        test.ok(isApproxEquals(x,y), "gateway's trust line decreases by the amount it issues");
+        test.ok(testconfig.isApproxEquals(x,y), "gateway's trust line decreases by the amount it issues");
         x = GLOBALS.trust_b.s.balance;
         y = GLOBALS.trust_a.s.balance;
-        test.ok(isApproxEquals(x + GLOBALS.sendamount,y), 's balance increases');
+        test.ok(testconfig.isApproxEquals(x + GLOBALS.sendamount,y), 's balance increases');
 
         x = GLOBALS.trust_b.d.balance;
         y = GLOBALS.trust_a.d.balance;
-        test.ok(isApproxEquals(x + GLOBALS.sendamount,y), 'd balance increases');
+        test.ok(testconfig.isApproxEquals(x + GLOBALS.sendamount,y), 'd balance increases');
         test.done();
     }
     );
