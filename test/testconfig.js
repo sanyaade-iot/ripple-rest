@@ -35,3 +35,25 @@ secrets.rook2pawn_receiver = process.env.SECRET_RECEIVER || fsecrets.rook2pawn_r
 secrets.rook2pawn_gw_cold = process.env.SECRET_GW_COLD || fsecrets.rook2pawn_gw_cold;
 secrets.rook2pawn_gw_hot = process.env.SECRET_GW_HOT || fsecrets.rook2pawn_gw_hot;
 exports.secrets = secrets;
+
+
+var isApproxEquals = function(a,b) {
+/*
+// this is with rounding
+    var isApproxEqualsPrecision = function(a,b,p) {
+        console.log("A:" + a + " b:" + b);
+        console.log(Number((a).toFixed(p)));
+        console.log(Number((b).toFixed(p)));
+        return (Number((a).toFixed(p)) == Number((b).toFixed(p)))
+    }
+    return isApproxEqualsPrecision(a,b,2)
+*/
+// this is without rounding
+    var toFixed = function (num, fixed) {
+        fixed = fixed || 0;
+        fixed = Math.pow(10, fixed);
+        return Math.floor(num * fixed) / fixed;
+    }
+    return (toFixed(a,2) == toFixed(b,2))
+}
+exports.isApproxEquals = isApproxEquals;

@@ -66,147 +66,164 @@ GLOBALS.trust_a.gw_s = { limit : undefined, balance : undefined };
 GLOBALS.trust_a.gw_d = { limit : undefined, balance : undefined };
 GLOBALS.trust_a.d = { limit : undefined, balance : undefined };
 
-async.series([
-    function(cb) {
-        remote.connect(function() {
-            cb()
-        })
-    },
-    // grab before trust lines
-    function(cb) {
-        getAccountLines([
-            testconfig.people[GLOBALS.destination],
-            testconfig.people[GLOBALS.sender],
-            testconfig.people[GLOBALS.gateway]
-            ],
-            function(response) {
-                var lines_d = response[testconfig.people[GLOBALS.destination]].lines;
-                var lines_s = response[testconfig.people[GLOBALS.sender]].lines;
-                var lines_gw = response[testconfig.people[GLOBALS.gateway]].lines;
-                lines_d.forEach(function(item) {
-                    if ((item.account == testconfig.people[GLOBALS.gateway])
-                    && (item.currency == GLOBALS.currency)) {
-                        GLOBALS.trust_b.d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
-                    }
-                });
-                lines_s.forEach(function(item) {
-                    if ((item.account == testconfig.people[GLOBALS.gateway])
-                    && (item.currency == GLOBALS.currency)) {
-                        GLOBALS.trust_b.s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
-                    }
-                });
-                lines_gw.forEach(function(item) {
-                    if ((item.account == testconfig.people[GLOBALS.sender])
-                    && (item.currency == GLOBALS.currency)) {
-                        GLOBALS.trust_b.gw_s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
-                    }
-                    if ((item.account == testconfig.people[GLOBALS.destination])
-                    && (item.currency == GLOBALS.currency)) {
-                        GLOBALS.trust_b.gw_d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
-                    }
-                });
-                log(GLOBALS);
+exports.testIndirectWallet = function(test) {
+    test.expect(4);
+    async.series([
+        function(cb) {
+            remote.connect(function() {
                 cb()
-            }
-        );
-    },
-    // issue $1 to S from GW
-    function(cb) {
-        var connectobj = {
-            hostname:'localhost',
-            'Content-Type' : 'application/json',
-            port: 5990,
-            path: '/v1/payments',
-            method:'POST'
-        };
-        // try to send 1 RKP
-        var payment1 = {
-            "secret": testconfig.secrets[GLOBALS.sender],
-            "client_resource_id": lib.generateUUID(),
-            "payment": {
-                "source_account": testconfig.people[GLOBALS.sender],
-                "destination_account": testconfig.people[GLOBALS.destination],
-                "destination_amount": {
-                    "value": GLOBALS.sendamount.toString(),
-                    "currency": GLOBALS.currency,
-                    "issuer": testconfig.people[GLOBALS.gateway] 
+            })
+        },
+        // grab before trust lines
+        function(cb) {
+            getAccountLines([
+                testconfig.people[GLOBALS.destination],
+                testconfig.people[GLOBALS.sender],
+                testconfig.people[GLOBALS.gateway]
+                ],
+                function(response) {
+                    var lines_d = response[testconfig.people[GLOBALS.destination]].lines;
+                    var lines_s = response[testconfig.people[GLOBALS.sender]].lines;
+                    var lines_gw = response[testconfig.people[GLOBALS.gateway]].lines;
+                    lines_d.forEach(function(item) {
+                        if ((item.account == testconfig.people[GLOBALS.gateway])
+                        && (item.currency == GLOBALS.currency)) {
+                            GLOBALS.trust_b.d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                        }
+                    });
+                    lines_s.forEach(function(item) {
+                        if ((item.account == testconfig.people[GLOBALS.gateway])
+                        && (item.currency == GLOBALS.currency)) {
+                            GLOBALS.trust_b.s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                        }
+                    });
+                    lines_gw.forEach(function(item) {
+                        if ((item.account == testconfig.people[GLOBALS.sender])
+                        && (item.currency == GLOBALS.currency)) {
+                            GLOBALS.trust_b.gw_s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                        }
+                        if ((item.account == testconfig.people[GLOBALS.destination])
+                        && (item.currency == GLOBALS.currency)) {
+                            GLOBALS.trust_b.gw_d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                        }
+                    });
+                    log(GLOBALS);
+                    cb()
                 }
+            );
+        },
+        // issue $1 to S from GW
+        function(cb) {
+            var connectobj = {
+                hostname:'localhost',
+                'Content-Type' : 'application/json',
+                port: 5990,
+                path: '/v1/payments',
+                method:'POST'
+            };
+            // try to send 1 RKP
+            var payment1 = {
+                "secret": testconfig.secrets[GLOBALS.sender],
+                "client_resource_id": lib.generateUUID(),
+                "payment": {
+                    "source_account": testconfig.people[GLOBALS.sender],
+                    "destination_account": testconfig.people[GLOBALS.destination],
+                    "destination_amount": {
+                        "value": GLOBALS.sendamount.toString(),
+                        "currency": GLOBALS.currency,
+                        "issuer": testconfig.people[GLOBALS.gateway] 
+                    }
+                }
+            };
+            connectobj.headers = {
+                'Content-Type':'application/json'
             }
-        };
-        connectobj.headers = {
-            'Content-Type':'application/json'
-        }
-        var req = http.request(connectobj,function(res) {
-            var body = "";
-            res.setEncoding('utf8');
-            res.on('data',function(chunk) {
-                body = body.concat(chunk);
+            var req = http.request(connectobj,function(res) {
+                var body = "";
+                res.setEncoding('utf8');
+                res.on('data',function(chunk) {
+                    body = body.concat(chunk);
+                });
+                res.on('end',function() {
+                    var obj = JSON.parse(body);
+                    console.log(obj);
+                    cb(null,obj);
+                });
             });
-            res.on('end',function() {
-                var obj = JSON.parse(body);
-                console.log(obj);
-                cb(null,obj);
-            });
-        });
-        req.write(JSON.stringify(payment1));
-        req.end();
-    },
-    // grab after trust lines
-    function(cb) {
-        getAccountLines([
-            testconfig.people[GLOBALS.destination],
-            testconfig.people[GLOBALS.sender],
-            testconfig.people[GLOBALS.gateway]
-            ],
-            function(response) {
-                var lines_d = response[testconfig.people[GLOBALS.destination]].lines;
-                var lines_s = response[testconfig.people[GLOBALS.sender]].lines;
-                var lines_gw = response[testconfig.people[GLOBALS.gateway]].lines;
-                lines_d.forEach(function(item) {
-                    if ((item.account == testconfig.people[GLOBALS.gateway])
-                    && (item.currency == GLOBALS.currency)) {
-                        GLOBALS.trust_a.d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
-                    }
-                });
-                lines_s.forEach(function(item) {
-                    if ((item.account == testconfig.people[GLOBALS.gateway])
-                    && (item.currency == GLOBALS.currency)) {
-                        GLOBALS.trust_a.s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
-                    }
-                });
-                lines_gw.forEach(function(item) {
-                    if ((item.account == testconfig.people[GLOBALS.sender])
-                    && (item.currency == GLOBALS.currency)) {
-                        GLOBALS.trust_a.gw_s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
-                    }
-                    if ((item.account == testconfig.people[GLOBALS.destination])
-                    && (item.currency == GLOBALS.currency)) {
-                        GLOBALS.trust_a.gw_d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
-                    }
-                });
-                log(GLOBALS);
-                cb()
-            }
-        );
-    },
-/*
-WHAT WE EXPECT
-  trust_b: 
-   { s: { limit: 10, balance: 2.65 },
-     gw_s: { limit: 0, balance: -2.65 },
-     gw_d: { limit: 0, balance: -0.35 },
-     d: { limit: 10, balance: 0.35 } },
+            req.write(JSON.stringify(payment1));
+            req.end();
+        },
+        // grab after trust lines
+        function(cb) {
+            getAccountLines([
+                testconfig.people[GLOBALS.destination],
+                testconfig.people[GLOBALS.sender],
+                testconfig.people[GLOBALS.gateway]
+                ],
+                function(response) {
+                    var lines_d = response[testconfig.people[GLOBALS.destination]].lines;
+                    var lines_s = response[testconfig.people[GLOBALS.sender]].lines;
+                    var lines_gw = response[testconfig.people[GLOBALS.gateway]].lines;
+                    lines_d.forEach(function(item) {
+                        if ((item.account == testconfig.people[GLOBALS.gateway])
+                        && (item.currency == GLOBALS.currency)) {
+                            GLOBALS.trust_a.d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                        }
+                    });
+                    lines_s.forEach(function(item) {
+                        if ((item.account == testconfig.people[GLOBALS.gateway])
+                        && (item.currency == GLOBALS.currency)) {
+                            GLOBALS.trust_a.s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                        }
+                    });
+                    lines_gw.forEach(function(item) {
+                        if ((item.account == testconfig.people[GLOBALS.sender])
+                        && (item.currency == GLOBALS.currency)) {
+                            GLOBALS.trust_a.gw_s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                        }
+                        if ((item.account == testconfig.people[GLOBALS.destination])
+                        && (item.currency == GLOBALS.currency)) {
+                            GLOBALS.trust_a.gw_d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                        }
+                    });
+                    log(GLOBALS);
+                    cb()
+                }
+            );
+        },
+    /*
+    WHAT WE EXPECT
+      trust_b: 
+       { s: { limit: 10, balance: 2.65 },
+         gw_s: { limit: 0, balance: -2.65 },
+         gw_d: { limit: 0, balance: -0.35 },
+         d: { limit: 10, balance: 0.35 } },
 
-NOW HOT WALLET SENDS 0.1 RKP to RECEIVER
+    NOW HOT WALLET SENDS 0.1 RKP to RECEIVER
 
-WHAT WE EXPECT:
+    WHAT WE EXPECT:
 
-  trust_a: 
-   { s: { limit: 10, balance: 2.55 },
-     gw_s: { limit: 0, balance: -2.55 },
-     gw_d: { limit: 0, balance: -0.45 },
-     d: { limit: 10, balance: 0.45 } },
-*/
+      trust_a: 
+       { s: { limit: 10, balance: 2.55 },
+         gw_s: { limit: 0, balance: -2.55 },
+         gw_d: { limit: 0, balance: -0.45 },
+         d: { limit: 10, balance: 0.45 } },
+    */
 
-]);
+    ],
+    function(err,resp) {
+        console.log("Final cb... ");
+//        test.equals((GLOBALS.trust_b.s.balance - GLOBALS.sendamount), GLOBALS.trust_a.s.balance); 
+        test.ok(testconfig.isApproxEquals((GLOBALS.trust_b.s.balance - GLOBALS.sendamount), GLOBALS.trust_a.s.balance), "Hot wallet balance should decrease by sendamount");
 
+
+        test.ok(testconfig.isApproxEquals((GLOBALS.trust_b.d.balance + GLOBALS.sendamount), GLOBALS.trust_a.d.balance), "Receiver balance should increase by sendamount");
+
+        test.ok(testconfig.isApproxEquals((GLOBALS.trust_b.gw_s.balance + GLOBALS.sendamount), GLOBALS.trust_a.gw_s.balance), "Cold Wallet liability to the hot wallet decreases by sendamount");
+
+
+        test.ok(testconfig.isApproxEquals((GLOBALS.trust_b.gw_d.balance - GLOBALS.sendamount), GLOBALS.trust_a.gw_d.balance), "Cold Wallet liability to the sender increasese by sendamount");
+
+        test.done();
+    });
+};
