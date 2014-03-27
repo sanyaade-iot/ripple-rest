@@ -43,8 +43,8 @@ var getAccountLines = function(ids_list,cb) {
 };
 
 var GLOBALS = {};
-GLOBALS.sender = 'rook2pawn_gw_cold';
-GLOBALS.gateway = 'rook2pawn_gw';
+GLOBALS.sender = 'rook2pawn_gw_hot';
+GLOBALS.gateway = 'rook2pawn_gw_cold';
 GLOBALS.destination = 'rook2pawn_receiver';
 GLOBALS.sendamount = 0.1;
 GLOBALS.currency = 'RKP';
@@ -109,6 +109,104 @@ async.series([
                 cb()
             }
         );
-    }
+    },
+    // issue $1 to S from GW
+    function(cb) {
+        var connectobj = {
+            hostname:'localhost',
+            'Content-Type' : 'application/json',
+            port: 5990,
+            path: '/v1/payments',
+            method:'POST'
+        };
+        // try to send 1 RKP
+        var payment1 = {
+            "secret": testconfig.secrets[GLOBALS.sender],
+            "client_resource_id": lib.generateUUID(),
+            "payment": {
+                "source_account": testconfig.people[GLOBALS.sender],
+                "destination_account": testconfig.people[GLOBALS.destination],
+                "destination_amount": {
+                    "value": GLOBALS.sendamount.toString(),
+                    "currency": GLOBALS.currency,
+                    "issuer": testconfig.people[GLOBALS.gateway] 
+                }
+            }
+        };
+        connectobj.headers = {
+            'Content-Type':'application/json'
+        }
+        var req = http.request(connectobj,function(res) {
+            var body = "";
+            res.setEncoding('utf8');
+            res.on('data',function(chunk) {
+                body = body.concat(chunk);
+            });
+            res.on('end',function() {
+                var obj = JSON.parse(body);
+                console.log(obj);
+                cb(null,obj);
+            });
+        });
+        req.write(JSON.stringify(payment1));
+        req.end();
+    },
+    // grab after trust lines
+    function(cb) {
+        getAccountLines([
+            testconfig.people[GLOBALS.destination],
+            testconfig.people[GLOBALS.sender],
+            testconfig.people[GLOBALS.gateway]
+            ],
+            function(response) {
+                var lines_d = response[testconfig.people[GLOBALS.destination]].lines;
+                var lines_s = response[testconfig.people[GLOBALS.sender]].lines;
+                var lines_gw = response[testconfig.people[GLOBALS.gateway]].lines;
+                lines_d.forEach(function(item) {
+                    if ((item.account == testconfig.people[GLOBALS.gateway])
+                    && (item.currency == GLOBALS.currency)) {
+                        GLOBALS.trust_a.d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                    }
+                });
+                lines_s.forEach(function(item) {
+                    if ((item.account == testconfig.people[GLOBALS.gateway])
+                    && (item.currency == GLOBALS.currency)) {
+                        GLOBALS.trust_a.s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                    }
+                });
+                lines_gw.forEach(function(item) {
+                    if ((item.account == testconfig.people[GLOBALS.sender])
+                    && (item.currency == GLOBALS.currency)) {
+                        GLOBALS.trust_a.gw_s = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                    }
+                    if ((item.account == testconfig.people[GLOBALS.destination])
+                    && (item.currency == GLOBALS.currency)) {
+                        GLOBALS.trust_a.gw_d = { limit : parseFloat(item.limit), balance : parseFloat(item.balance)};
+                    }
+                });
+                log(GLOBALS);
+                cb()
+            }
+        );
+    },
+/*
+WHAT WE EXPECT
+  trust_b: 
+   { s: { limit: 10, balance: 2.65 },
+     gw_s: { limit: 0, balance: -2.65 },
+     gw_d: { limit: 0, balance: -0.35 },
+     d: { limit: 10, balance: 0.35 } },
+
+NOW HOT WALLET SENDS 0.1 RKP to RECEIVER
+
+WHAT WE EXPECT:
+
+  trust_a: 
+   { s: { limit: 10, balance: 2.55 },
+     gw_s: { limit: 0, balance: -2.55 },
+     gw_d: { limit: 0, balance: -0.45 },
+     d: { limit: 10, balance: 0.45 } },
+*/
+
 ]);
 
