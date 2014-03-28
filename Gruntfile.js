@@ -48,7 +48,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', ['dbsetup']);
   grunt.registerTask('dev', ['jshint', 'nodemon']);
-//  grunt.registerTask('test', ['jshint', 'simplemocha:local']);
+/*  grunt.registerTask('test', ['simplemocha:local','nodeunit:remote']); */
   grunt.registerTask('test', ['nodeunit:remote']);
 
   grunt.registerTask('dbsetup', 'Check if the database is running / exists', function(){
