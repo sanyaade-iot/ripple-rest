@@ -48,14 +48,20 @@ var isApproxEquals = function(a,b) {
     }
     return isApproxEqualsPrecision(a,b,2)
 */
+
 // this is without rounding
+/*
     var toFixed = function (num, fixed) {
         fixed = fixed || 0;
         fixed = Math.pow(10, fixed);
         return Math.floor(num * fixed) / fixed;
     }
-    var af = toFixed(a,2);
-    var bf = toFixed(b,2);
+*/
+    var toFixed = function(num) {
+        return Number(num.toString().match(/^\d+(?:\.\d{0,2})?/))
+    }
+    var af = toFixed(a);
+    var bf = toFixed(b);
     console.log(a);console.log(af);
     console.log(b);console.log(bf);
     return (af == bf);
