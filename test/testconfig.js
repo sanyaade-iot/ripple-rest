@@ -54,6 +54,11 @@ var isApproxEquals = function(a,b) {
         fixed = Math.pow(10, fixed);
         return Math.floor(num * fixed) / fixed;
     }
-    return (toFixed(a,2) == toFixed(b,2))
+    var af = toFixed(a,2);
+    var bf = toFixed(b,2);
+    console.log(a);console.log(af);
+    console.log(b);console.log(bf);
+    return (af == bf);
+//  return (toFixed(a,2) == toFixed(b,2))
 }
 exports.isApproxEquals = isApproxEquals;
