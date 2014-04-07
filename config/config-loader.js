@@ -41,16 +41,30 @@ nconf.defaults({
   PORT: 5990,
   NODE_ENV: 'development',
   HOST: 'localhost',
-  // sqlite: {
-  //   schemas: __dirname + '/../schemas-for-sqlite',
-  //   files: __dirname + '../'
-  // },
   rippled_servers: [
     {
       host: 's-west.ripple.com',
       port: 443,
       secure: true
     }
+  ],
+  currency_prioritization: [
+    'XRP',
+    'EUR',
+    'GBP',
+    'AUD',
+    'NZD',
+    'USD',
+    'CAD',
+    'CHF',
+    'MXN',
+    'SGD', 
+    'NOK', 
+    'JPY',
+    'CNY'
+  ],
+  currency_pair_exceptions: [
+    'ZAR/JPY'
   ]
 });
 
