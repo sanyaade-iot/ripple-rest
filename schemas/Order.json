@@ -8,7 +8,7 @@
       "description": "Ripple Address of the order's creator",
       "$ref": "RippleAddress"
     },
-    "is_buy": {
+    "is_bid": {
       "description": "Order is a bid if true, or an ask otherwise",
       "type": "boolean"
     },
