@@ -33,6 +33,10 @@
       "type": "string",
       "pattern": "^[0-9]*$"
     },
+    "passive": {
+      "description": "Boolean that if set to true indicates this order should not take other orders as it is being placed. This is set by market makers intending to add market liquidity and allows opposing offers to be placed at the same price point with no spread",
+      "type": "boolean"
+    },
     "immediate_or_cancel": {
       "description": "Boolean that if set to true indicates this order should only take orders that are available at the time of execution and will not create an entry in the Ripple Ledger",
       "type": "boolean"
