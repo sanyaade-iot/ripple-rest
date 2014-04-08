@@ -7,6 +7,9 @@ var order_formatter    = require('../../lib/formatters/order-formatter');
 
 var order_new_two_amounts = require('../testdata/order_new_two_amounts.json');
 
+var tx_offercreate_newoffer = require('../testdata/tx_offercreate_newoffer.json');
+var order_offercreate_newoffer = require('../testdata/order_offercreate_newoffer.json');
+
 describe('lib/formatters/order-formatter', function(){
 
   describe('.orderIsValid()', function(){
@@ -207,6 +210,19 @@ describe('lib/formatters/order-formatter', function(){
 
     });
 
+    it('should respond with an error if passive is invalid', function(done){
+
+      var order1 = clone(order_new_two_amounts);
+      order1.passive = 'true';
+      order_formatter.orderIsValid(order1, function(err, is_valid){
+        expect(err).to.exist;
+        expect(err.message).to.equal('Invalid parameter: passive. Must be a boolean');
+        expect(is_valid).not.to.exist;
+        done();
+      });      
+
+    });
+
     it('should respond with an error if immediate_or_cancel is invalid', function(done){
 
       var order1 = clone(order_new_two_amounts);
@@ -338,6 +354,289 @@ describe('lib/formatters/order-formatter', function(){
         expect(is_valid).to.be.true;
         done();
       });
+
+    });
+
+  });
+
+  describe('.parseOrderFromTx()', function(){
+
+    it('should respond with an error if no account is supplied in the opts', function(){
+
+      order_formatter.parseOrderFromTx({}, function(err, order){
+        expect(err).to.exist;
+        expect(err.message).to.equal('Must supply opts.account to parse order');
+        expect(order).not.to.exist;
+      });
+
+    });
+
+    it('should correctly parse XRP amounts and exchange_rates', function(){
+
+      order_formatter.parseOrderFromTx({
+        meta: {
+          AffectedNodes: [{
+            ModifiedNode: {
+              LedgerEntryType: 'Offer',
+              FinalFields: {
+                Account: 'rLpq5RcRzA8FU1yUqEPW4xfsdwon7casuM',
+                BookDirectory: 'CF8D13399C6ED20BA82740CFA78E928DC8D498255249BA634E038D7EA4C68000',
+                TakerGets: '1000000',
+                TakerPays: {
+                  value: 0.1,
+                  currency: 'USD',
+                  issuer: 'r...'
+                }
+              }
+            }
+          }]
+        }
+      }, {
+        account: 'rLpq5RcRzA8FU1yUqEPW4xfsdwon7casuM',
+        currency_prioritization: [ 'XRP', 'USD' ]
+      }, function(err, order){
+        expect(err).not.to.exist;
+        expect(order).to.exist;
+
+        expect(order.is_bid).to.be.false;
+        expect(order.base_amount.value).to.equal('1');
+        expect(order.base_amount.currency).to.equal('XRP');
+        expect(order.counter_amount.currency).to.equal('USD');
+        expect(order.exchange_rate).to.equal('0.1');
+      });
+
+    });
+
+    it('should parse an order created from an OfferCreate transaction', function(){
+
+      // order_formatter.parseOrderFromTx(tx_offercreate_newoffer, {
+      //   account: 'rLpq5RcRzA8FU1yUqEPW4xfsdwon7casuM'
+      // }, function(err, order){
+      //   expect(err).not.to.exist;
+      //   expect(order).to.deep.equal(order_offercreate_newoffer);
+      // });
+
+    });
+
+    it('should parse an order partially filled by an OfferCreate transaction', function(){
+
+    });
+
+    it('should parse the correct order partially filled by an OfferCreate transaction that modified two orders from the same account', function(){
+
+    });
+
+    it('should parse an order filled by an OfferCreate transaction', function(){
+
+    });
+
+    it('should parse an order cancelled and replaced by an OfferCreate transaction', function(){
+
+    });
+
+    it('should parse an order cancelled aby an OfferCancel transaction', function(){
+
+    });
+
+    it('should parse an order partially filled by a Payment transaction', function(){
+
+    });
+
+    it('should parse the correct order modified by a Payment transaction that modified two orders from the same account', function(){
+
+    });
+
+    it('should parse an order deleted by a Payment transaction', function(){
+
+    });
+
+    it('should properly parse the expiration_timestamp', function(){
+
+    });
+
+    it('should properly parse multiple flags', function(){
+
+    });
+
+    it('should parse an immediate_or_cancel order', function(){
+
+    });
+
+    it('should parse a fill_or_kill order', function(){
+
+    });
+
+  });
+
+  describe('.baseCurrencyIsTakerGets()', function(){
+
+    it('should properly handle XRP written as a string', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets('10', {
+        value: 1, 
+        currency: 'USD', 
+        issuer: 'r...'
+      }, {
+        currency_prioritization: [ 'XRP', 'USD' ]
+      })).to.be.true;
+
+    });
+
+    it('should return true if both currencies are in the currency_prioritization and the taker_gets has a higher priority', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1,
+        currency: 'EUR',
+        issuer: 'r...'
+      }, {
+        value: 1.3, 
+        currency: 'USD', 
+        issuer: 'r...'
+      }, {
+        currency_prioritization: [ 'EUR', 'USD' ]
+      })).to.be.true;
+
+    });
+
+    it('should return false if both currencies are in the currency_prioritization and the taker_pays has a higher priority', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1.3, 
+        currency: 'USD', 
+        issuer: 'r...'
+      }, {
+        value: 1,
+        currency: 'EUR',
+        issuer: 'r...'
+      }, {
+        currency_prioritization: [ 'EUR', 'USD' ]
+      })).to.be.false;
+
+    });
+
+    it('should return true if only the taker_gets is in the currency_prioritization', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1,
+        currency: 'EUR',
+        issuer: 'r...'
+      }, {
+        value: 1.3, 
+        currency: 'USD', 
+        issuer: 'r...'
+      }, {
+        currency_prioritization: [ 'EUR' ]
+      })).to.be.true;
+
+    });
+
+    it('should return false if only the taker_pays is in the currency_prioritization', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1,
+        currency: 'EUR',
+        issuer: 'r...'
+      }, {
+        value: 1.3, 
+        currency: 'USD', 
+        issuer: 'r...'
+      }, {
+        currency_prioritization: [ 'USD' ]
+      })).to.be.false;
+
+    });
+
+    it('should properly override the currency_prioritization with the currency_pair_exceptions', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1,
+        currency: 'EUR',
+        issuer: 'r...'
+      }, {
+        value: 1.3, 
+        currency: 'USD', 
+        issuer: 'r...'
+      }, {
+        currency_prioritization: [ 'USD' ],
+        currency_pair_exceptions: [ 'EUR/USD' ]
+      })).to.be.true;
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1.3, 
+        currency: 'USD', 
+        issuer: 'r...'
+      }, {
+        value: 1,
+        currency: 'EUR',
+        issuer: 'r...'
+      }, {
+        currency_prioritization: [ 'USD' ],
+        currency_pair_exceptions: [ 'EUR/USD' ]
+      })).to.be.false;
+
+    });
+
+    it('should return true if neither currency is in the currency_prioritization, nor in the currency_pair_exceptions, and the taker_gets is alphabetically first', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1,
+        currency: 'EUR',
+        issuer: 'r...'
+      }, {
+        value: 1.3, 
+        currency: 'USD', 
+        issuer: 'r...'
+      }, {
+        currency_prioritization: [ ]
+      })).to.be.true;
+
+    });
+
+    it('should return false if neither currency is in the currency_prioritization, nor in the currency_pair_exceptions, and the taker_pays is alphabetically first', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1.3, 
+        currency: 'USD', 
+        issuer: 'r...'
+      }, {
+        value: 1,
+        currency: 'EUR',
+        issuer: 'r...'
+      }, {
+        currency_prioritization: [ ]
+      })).to.be.false;
+
+    });
+
+    it('should return true if the currencies are the same and the taker_gets issuer is first lexicographically', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1.0005, 
+        currency: 'USD', 
+        issuer: 'r1...'
+      }, {
+        value: 1.0010,
+        currency: 'USD',
+        issuer: 'r2...'
+      }, {
+        currency_prioritization: [ ]
+      })).to.be.true;
+
+    });
+
+    it('should return false if the currencies are the same and the taker_pays issuer is first lexicographically', function(){
+
+      expect(order_formatter.baseCurrencyIsTakerGets({
+        value: 1.0005, 
+        currency: 'USD', 
+        issuer: 'r2...'
+      }, {
+        value: 1.0010,
+        currency: 'USD',
+        issuer: 'r1...'
+      }, {
+        currency_prioritization: [ ]
+      })).to.be.false;
 
     });
 
