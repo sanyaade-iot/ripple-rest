@@ -1,3 +1,4 @@
+var _     = require('lodash');
 var fs    = require('fs');
 var nconf = require('nconf');
 
@@ -67,5 +68,14 @@ nconf.defaults({
     'ZAR/JPY'
   ]
 });
+
+// Make sure currency codes are uppercase
+function uppercaseArray(array) {
+  return _.map(array, function(val){
+    return val.toUpperCase();
+  });
+}
+nconf.set('currency_prioritization', uppercaseArray(nconf.get('currency_prioritization')));
+nconf.set('currency_pair_exceptions', uppercaseArray(nconf.get('currency_pair_exceptions')));
 
 module.exports = nconf;
